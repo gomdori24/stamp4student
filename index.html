@@ -59,18 +59,22 @@
         <!-- 1. 모양 선택 -->
         <div class="mb-6">
             <label class="block text-sm font-semibold text-gray-700 mb-3">1. 테두리 모양</label>
-            <div class="flex gap-3">
+            <div class="flex gap-2">
                 <label class="flex-1">
                     <input type="radio" name="shape" value="circle" checked class="peer sr-only">
-                    <div class="px-4 py-2 text-center border rounded-lg cursor-pointer peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 hover:bg-gray-50 transition-colors">원형</div>
+                    <div class="px-2 py-2 text-center text-sm border rounded-lg cursor-pointer peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 hover:bg-gray-50 transition-colors">원형</div>
                 </label>
                 <label class="flex-1">
                     <input type="radio" name="shape" value="square" class="peer sr-only">
-                    <div class="px-4 py-2 text-center border rounded-lg cursor-pointer peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 hover:bg-gray-50 transition-colors">정사각형</div>
+                    <div class="px-2 py-2 text-center text-sm border rounded-lg cursor-pointer peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 hover:bg-gray-50 transition-colors">정사각형</div>
                 </label>
                 <label class="flex-1">
                     <input type="radio" name="shape" value="rect" class="peer sr-only">
-                    <div class="px-4 py-2 text-center border rounded-lg cursor-pointer peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 hover:bg-gray-50 transition-colors">직사각형</div>
+                    <div class="px-2 py-2 text-center text-sm border rounded-lg cursor-pointer peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 hover:bg-gray-50 transition-colors">직사각형</div>
+                </label>
+                <label class="flex-1">
+                    <input type="radio" name="shape" value="none" class="peer sr-only">
+                    <div class="px-2 py-2 text-center text-sm border rounded-lg cursor-pointer peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 hover:bg-gray-50 transition-colors">없음</div>
                 </label>
             </div>
             
@@ -132,7 +136,7 @@
                 <p class="text-xs text-gray-500 mt-1">원본에 여백이 많아 작게 보인다면 100% 이상으로 확대하세요.</p>
             </div>
 
-            <div>
+            <div id="borderSliderContainer" class="transition-opacity duration-200">
                 <div class="flex justify-between text-sm mb-1">
                     <span class="text-gray-600">테두리 선 두께 (최소 0.3mm 권장)</span>
                     <span id="borderVal" class="font-mono text-gray-900">12px</span>
@@ -177,7 +181,45 @@
             </svg>
             스탬프 도안 파일 다운로드
         </button>
+
+        <button id="driveBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7.71 3.5L1.15 15l3.45 6 6.55-11.5m-2.2-3.5h13.1l3.45 6H9.76m3.65 1.5l-6.55 11.5H20l6.55-11.5"/>
+            </svg>
+            구글 드라이브로 보내기
+        </button>
     </div>
+</div>
+
+<!-- 파일 이름 입력 및 드라이브 저장 모달 -->
+<div id="driveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 transition-opacity">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform" id="driveModalContent">
+        <h3 class="text-lg font-bold text-gray-900 mb-2">구글 드라이브에 저장</h3>
+        <p class="text-sm text-gray-500 mb-4">저장할 파일의 이름을 입력하세요.<br>(확장자는 자동으로 .png로 지정됩니다)</p>
+        <input type="text" id="driveFileName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-5 font-medium" placeholder="예: 홍길동_스탬프도안">
+        
+        <div id="driveLoading" class="hidden flex-col items-center justify-center py-6">
+            <svg class="animate-spin h-8 w-8 text-blue-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-sm font-bold text-gray-700">드라이브로 전송 중...</span>
+            <span class="text-xs text-gray-500 mt-1">창을 닫지 마세요.</span>
+        </div>
+
+        <div id="driveActionBtns" class="flex justify-end gap-2">
+            <button id="cancelDriveBtn" class="px-4 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">취소</button>
+            <button id="confirmDriveBtn" class="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-1.5 shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                드라이브 저장
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 커스텀 알림 토스트 (alert 대체용) -->
+<div id="toastMsg" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-2 translate-y-4 font-medium text-sm">
+    <span id="toastText"></span>
 </div>
 
 <script>
@@ -229,6 +271,18 @@
             } else {
                 ratioControl.classList.add('hidden');
             }
+            
+            // '없음' 선택 시 테두리 두께 슬라이더 비활성화
+            const borderContainer = document.getElementById('borderSliderContainer');
+            const borderSlider = document.getElementById('borderSlider');
+            if(e.target.value === 'none') {
+                borderContainer.style.opacity = '0.4';
+                borderSlider.disabled = true;
+            } else {
+                borderContainer.style.opacity = '1';
+                borderSlider.disabled = false;
+            }
+            
             renderStamp();
         }));
 
@@ -315,7 +369,7 @@
             ctx.clearRect(0, 0, w, h);
 
             // 2. 테두리 그리기
-            if (borderThick > 0) {
+            if (borderThick > 0 && shape !== 'none') {
                 ctx.lineWidth = borderThick;
                 ctx.strokeStyle = '#000000'; // 도안은 무조건 검은색
                 ctx.beginPath();
@@ -334,7 +388,7 @@
                 ctx.save();
                 
                 // 마스킹(클리핑) 영역 설정 - 여백 제한 없이 테두리 안쪽까지만 잘리도록 설정
-                const clipMargin = borderThick; 
+                const clipMargin = shape === 'none' ? 0 : borderThick; 
                 ctx.beginPath();
                 if (shape === 'circle') {
                     // 반지름이 음수가 되지 않도록 보호
@@ -522,6 +576,115 @@
 
         // 초기 테두리 그리기
         drawBaseShape();
+
+        // --- 구글 드라이브 연동 로직 ---
+        
+        // 🚨 중요: 여기에 생성하신 Google Apps Script 배포 URL을 입력해야 합니다!
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5I8WtxsHqPK2Vo7xT4m18DGG4lxirMvCG2nWUzIPa_MptIemIFJ2Q_J10RFyCnb8f/exec"; 
+        
+        const driveBtn = document.getElementById('driveBtn');
+        const driveModal = document.getElementById('driveModal');
+        const driveModalContent = document.getElementById('driveModalContent');
+        const driveFileName = document.getElementById('driveFileName');
+        const cancelDriveBtn = document.getElementById('cancelDriveBtn');
+        const confirmDriveBtn = document.getElementById('confirmDriveBtn');
+        const driveActionBtns = document.getElementById('driveActionBtns');
+        const driveLoading = document.getElementById('driveLoading');
+        const toastMsg = document.getElementById('toastMsg');
+        const toastText = document.getElementById('toastText');
+
+        // 토스트 알림 함수
+        function showToast(message, isError = false) {
+            toastText.textContent = message;
+            if (isError) {
+                toastMsg.classList.add('bg-red-600', 'text-white');
+                toastMsg.classList.remove('bg-gray-800', 'text-white', 'bg-green-600');
+            } else {
+                toastMsg.classList.add('bg-gray-800', 'text-white');
+                toastMsg.classList.remove('bg-red-600', 'text-white', 'bg-green-600');
+            }
+            
+            toastMsg.classList.remove('opacity-0', 'translate-y-4');
+            toastMsg.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                toastMsg.classList.remove('opacity-100', 'translate-y-0');
+                toastMsg.classList.add('opacity-0', 'translate-y-4');
+            }, 3000);
+        }
+
+        // 드라이브 모달 열기
+        driveBtn.addEventListener('click', () => {
+            if (!uploadedImg) {
+                showToast("이미지를 먼저 업로드해주세요!", true);
+                return;
+            }
+            if (GAS_WEB_APP_URL === "여기에_앱스스크립트_URL을_붙여넣으세요") {
+                showToast("개발자 안내: 소스코드에 앱스스크립트 URL을 연동해야 합니다.", true);
+                return;
+            }
+            
+            driveFileName.value = ''; // 초기화
+            driveModal.classList.remove('hidden');
+            // 애니메이션을 위해 약간의 지연 후 스타일 변경
+            setTimeout(() => {
+                driveModalContent.classList.remove('scale-95');
+                driveModalContent.classList.add('scale-100');
+            }, 10);
+            driveFileName.focus();
+        });
+
+        // 드라이브 모달 닫기
+        function closeDriveModal() {
+            driveModalContent.classList.remove('scale-100');
+            driveModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                driveModal.classList.add('hidden');
+            }, 200);
+        }
+        
+        cancelDriveBtn.addEventListener('click', closeDriveModal);
+
+        // 확인 버튼 (드라이브로 전송)
+        confirmDriveBtn.addEventListener('click', async () => {
+            const fileName = driveFileName.value.trim() || '스탬프도안';
+            const base64Data = canvas.toDataURL('image/png');
+
+            // 로딩 상태 표시
+            driveFileName.style.display = 'none';
+            driveActionBtns.style.display = 'none';
+            driveLoading.style.display = 'flex';
+
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS 방지를 위해 text/plain 사용
+                    body: JSON.stringify({
+                        filename: fileName,
+                        image: base64Data
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`"${result.name}" 파일이 드라이브에 저장되었습니다.`);
+                    closeDriveModal();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Upload Error:', error);
+                showToast("구글 드라이브 저장에 실패했습니다.", true);
+            } finally {
+                // UI 복구
+                setTimeout(() => {
+                    driveFileName.style.display = 'block';
+                    driveActionBtns.style.display = 'flex';
+                    driveLoading.style.display = 'none';
+                }, 300);
+            }
+        });
     });
 </script>
 </body>
