@@ -501,7 +501,7 @@
         });
 
         // --- 구글 드라이브 연동 전송 로직 ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5I8WtxsHqPK2Vo7xT4m18DGG4lxirMvCG2nWUzIPa_MptIemIFJ2Q_J10RFyCnb8f/exec"; // ★ 앱스스크립트 URL 입력
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxHX_7hOUnJ75rMtMHcdiuHoVDBzhoaoI-tWpZWjWMYdvm4u-DVx3IKsBBjBCk_yq04/exec"; // ★ 앱스스크립트 URL 입력
         
         if(sendToDriveBtn) {
             sendToDriveBtn.addEventListener('click', () => {
@@ -538,6 +538,7 @@
                 // 앱스 스크립트로 데이터 전송 (CORS 우회를 위해 text/plain 사용)
                 fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
+                    redirect: 'follow', // 리다이렉트 명시적 허용
                     body: JSON.stringify({
                         fileName: fileName,
                         mimeType: 'image/png',
@@ -547,19 +548,28 @@
                         'Content-Type': 'text/plain;charset=utf-8', 
                     }
                 })
-                .then(response => response.json())
+                .then(async response => {
+                    const text = await response.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('서버 응답 오류: ' + text.substring(0, 100) + '...');
+                    }
+                })
                 .then(result => {
                     if (result.status === 'success') {
                         sendToDriveBtn.innerHTML = '전송 완료!';
                         sendToDriveBtn.classList.replace('bg-blue-600', 'bg-green-500');
                     } else {
-                        alert('오류 발생: ' + result.message);
+                        // 에러 메시지가 undefined일 경우, 구글 서버의 에러 원문(JSON)을 그대로 출력
+                        const errMsg = result.message || JSON.stringify(result);
+                        alert('오류 발생: ' + errMsg);
                         sendToDriveBtn.innerHTML = '전송 실패';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('전송 중 오류가 발생했습니다. 앱스스크립트 URL을 확인해주세요.');
+                    alert('요청 중 문제가 발생했습니다:\n' + error.message);
                     sendToDriveBtn.innerHTML = '전송 실패';
                 })
                 .finally(() => {
